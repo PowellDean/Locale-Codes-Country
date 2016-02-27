@@ -7,5 +7,5 @@
     "provides" : {
         "Locale::Codes::Country" : "lib/Locale/Codes/Country.pm6"
     },
-    "source-url" : ""
+    "source-url" : "https://github.com/PowellDean/Locale-Codes-Country.git"
 }
