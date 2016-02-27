@@ -1,4 +1,4 @@
-unit module Locale::Country::Code;
+unit module Locale::Codes::Country;
 use v6;
 
 constant LOCALE_CODE_ALPHA_2 is export = 'alpha-2';
@@ -283,7 +283,7 @@ QA:QAT:634:Qatar
 RE:REU:638:Réunion
 RO:ROU::642:Romania
 RS:SRB:688:Serbia
-RU:RUS:Russia,Federation of
+RU:RUS:643:Russia,Federation of
 RW:RWA:646:Rwanda
 SA:SAU:682:Saudi Arabia,Kingdom of
 SB:SLB:090:Solomon Islands
@@ -292,7 +292,7 @@ SD:SDN:736:Sudan
 SE:SWE:752:Sweden
 SG:SGP:702:Singapore
 SH:SHN:654:Saint Helena
-SI:SVN:Slovenia
+SI:SVN:705:Slovenia
 SJ:SJM:744:Svalbard and Jan Mayen Islands
 SK:SVK:703:Slovakia
 SL:SLE:694:Sierra Leona
