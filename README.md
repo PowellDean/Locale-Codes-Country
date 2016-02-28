@@ -20,12 +20,23 @@ What's it for?
 
 Locale::Codes::Country is an implementation of the ISO3166 standard, which defines
 codes for the names of countries, dependent territories, etc. There are
-essentially three types of codes associated with each country/area:
+essentially four types of codes associated with each country/area:
 
 * LOCALE_CODE_ALPHA_2 defines a unique 2 character code for each country/area
 * LOCALE_CODE_ALPHA_3 defines a unique 3 character code
 * LOCALE_CODE_NUMERIC defines a numeric code (between 000 and 999) for each
-country/area
+  country/area
+* LOCALE_CODE_DOM defines the IANA assigned Top Level Domain for a country.
+    For most countrues this just the LOCALE_CODE_ALPHA_2 code in lower case
+    with a leading dot, but every now and again there is a difference. I may
+    not have caught those yet ;-)
+    
+For each of the constants listed above there is an equivalent string. Respectively:
+* 'alpha-2'
+* 'alpha-3'
+* 'numeric'
+* 'dom'
+
 
 Using Locale::Codes::Country, you may lookup a country name by its ISO3166-2,
 ISO3166-3 or ISO3166-Numeric defined code. You may also look up a country's
@@ -39,17 +50,15 @@ Examples
 	use Locale::Codes::Country;
 	
 	say codeToCountry("BGD"); # will print 'Bangladesh'
-	say codeToCountry("CA"); #will print 'Canada'. ISO3166_2 is defaulted
-	say countryToCode("Austria",LOCAL_CODE_NUMERIC) # will print 40
-	say codeToCode(70, ISO3166_3); # will print BIH (Bosnia and Herzegovina)
+	say codeToCountry("CA"); # will print 'Canada'. LOCALE_CODE_ALPHA_2 is default
+	say countryToCode("Austria",LOCALE_CODE_NUMERIC) # will print 40
+	say codeToCode(70, 'alpha-3'); # will print BIH (Bosnia and Herzegovina)
 
 Future
 ======
 
 I may in the near future add other codes such as IOC designations, or FIPS
-codes to the mix. If you look at the source you'll note that the full list
-of ISO 3166 country designations hasn't been added yet. I'm adding those
-as I go along.
+codes to the mix.
 
 Testing
 =======
