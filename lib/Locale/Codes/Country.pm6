@@ -32,13 +32,14 @@ for $=finish.lines {
 %countryToCode3 = %code3ToCountry.invert;
 %countryToCodeNum = %codeNumToCountry.invert;
 
-sub VERSION() is export { v0.0.1; }
+sub VERSION() is export { v1.0.0; }
 
 sub allCountryCodes($codeset?=LOCALE_CODE_ALPHA_2) is export {
     given $codeset {
         return %code2ToCountry.keys when LOCALE_CODE_ALPHA_2;
         return %code3ToCountry.keys when LOCALE_CODE_ALPHA_3;
         return %codeNumToCountry.keys when LOCALE_CODE_NUMERIC;
+        return map({"\.$_".lc}, %code2ToCountry.keys) when LOCALE_CODE_DOM;
     }
 }
 
@@ -52,11 +53,16 @@ sub codeToCode($code!, $codesetOut?=LOCALE_CODE_ALPHA_2) is export {
     return countryToCode($country, $codesetOut);
 }
 
-#TODO: Add code to check if someone has given a TLD
 multi codeToCountry(Str $aCode) is export {
     given chars($aCode) {
         when 2 { return %code2ToCountry{$aCode.uc}; }
-        when 3 { return %code3ToCountry{$aCode.uc}; }
+        when 3 {
+            if $aCode ~~ /^\./ {
+                my $trimCode = $aCode;
+                $trimCode ~~ s/\.//;
+                return %code2ToCountry{$trimCode.uc};
+            }
+            return %code3ToCountry{$aCode.uc}; }
         default { die "Code must be either 2 or 3 ASCII characters"; }
     }
     return Any;
