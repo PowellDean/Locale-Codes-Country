@@ -4,6 +4,7 @@ use v6;
 constant LOCALE_CODE_ALPHA_2 is export = 'alpha-2';
 constant LOCALE_CODE_ALPHA_3 is export = 'alpha-3';
 constant LOCALE_CODE_NUMERIC is export = 'numeric';
+constant LOCALE_CODE_DOM is export = 'dom';
 
 # Local hashes. No need to export as values are sent via functions.
 my %code2ToCountry;
@@ -33,7 +34,15 @@ for $=finish.lines {
 
 sub VERSION() is export { v0.0.1; }
 
-sub all-country-names() is export { return %countryToCode2.keys; }
+sub allCountryCodes($codeset?=LOCALE_CODE_ALPHA_2) is export {
+    given $codeset {
+        return %code2ToCountry.keys when LOCALE_CODE_ALPHA_2;
+        return %code3ToCountry.keys when LOCALE_CODE_ALPHA_3;
+        return %codeNumToCountry.keys when LOCALE_CODE_NUMERIC;
+    }
+}
+
+sub allCountryNames() is export { return %countryToCode2.keys; }
 
 # Given the country code, return one of the other formats according
 # to the locale requested
@@ -43,6 +52,7 @@ sub codeToCode($code!, $codesetOut?=LOCALE_CODE_ALPHA_2) is export {
     return countryToCode($country, $codesetOut);
 }
 
+#TODO: Add code to check if someone has given a TLD
 multi codeToCountry(Str $aCode) is export {
     given chars($aCode) {
         when 2 { return %code2ToCountry{$aCode.uc}; }
@@ -57,12 +67,44 @@ multi codeToCountry(Int $aCode) is export {
     return %codeNumToCountry{$key};
 }
 
+# Sure, there's some hard coding in this, and hard-coding is usually a Bad
+# Thing. But it fits for a small number of countries, and when you think
+# about the alternative, is it really so awful?
 sub countryToCode($country!, $codesetOut?=LOCALE_CODE_ALPHA_2) is export {
-    my $code = searchCountryName($country, $codesetOut);
+    my $commonName = $country.uc;
     my $lookup;
+
+    given $commonName {
+        when "ALAND ISLANDS" {
+            $commonName = "Åland Islands";
+        }
+        when "HOLY SEE" {
+            $commonName = "Vatican City";
+        }
+        when "NORTH KOREA" {
+            $commonName = "Democratic People's Republic of Korea";
+        }
+        when "REPUBLIC OF CHINA" {
+            $commonName = "Taiwan";
+        }
+        when "SAINT-BARTHELEMY" {
+            $commonName = "Saint-Barthélemy";
+        }
+        when "SOUTH KOREA" {
+            $commonName = "Republic of Korea";
+        }
+        when "UNITED KINGDOM" {
+            $commonName = "Great Britain";
+        }
+        when "UNITED STATES" {
+            $commonName = "AMERICA";
+        }
+    }
+    
+    my $code = searchCountryName($commonName, $codesetOut);
     
     if (!$code) {
-        my $lookup = %countryXRef{$country.uc};
+        my $lookup = %countryXRef{$commonName.uc};
         return Any if (!$lookup);
         $code = searchCountryName($lookup, $codesetOut);
     }
@@ -70,6 +112,12 @@ sub countryToCode($country!, $codesetOut?=LOCALE_CODE_ALPHA_2) is export {
     return $code;
 }
 
+# Some countries have longer, more convoluted names. Example:<br /> The
+# Plurinational State of Bolivia. Nobody will remember a proper name like
+# that. Everyone will just want to look up *Bolivia*. So to get around these
+# long names the table below has the common name first, followed by a comma,
+# then the rest of the name. We use this format to allow just a common name
+# to be searched.
 sub processComplexName($country!) {
     my @elements = $country.split(",");
     my $popularName = @elements[0].trim();
@@ -93,6 +141,12 @@ sub searchCountryName($country!, $codesetOut?=LOCALE_CODE_ALPHA_2) {
         when LOCALE_CODE_ALPHA_2 { return %countryToCode2{$country.uc}; }
         when LOCALE_CODE_ALPHA_3 { return %countryToCode3{$country.uc}; }
         when LOCALE_CODE_NUMERIC { return  %countryToCodeNum{$country.uc}; }
+        when LOCALE_CODE_DOM {
+            my $dom = %countryToCode2{$country.uc};
+            return Any if (!$dom);
+            $dom = $dom.lc;
+            return ".$dom";
+        }
     }
 }
 
@@ -137,7 +191,7 @@ BY:BLR:112:Belarus
 BZ:BLZ:084:Belize
 CA:CAN:124:Canada
 CC:CCK:166:Cocos (Keeling) Islands
-CD:COD:180:The Democratic Replublic of the Congo
+CD:COD:180:The Democratic Republic of the Congo
 CF:CAF:140:Central African Republic
 CG:COG:178:Congo,The Republic of
 CH:CHE:756:Switzerland
@@ -145,7 +199,7 @@ CI:CIV:384:Côte d'Ivoire
 CK:COK:184:Cook Islands
 CL:CHL:152:Chile
 CM:CMR:120:Cameroon
-CN:CHN:156:China
+CN:CHN:156:China,People's Republic of
 CO:COL:170:Colombia
 CR:CRI:188:Costa Rica
 CU:CUB:192:Cuba
@@ -185,11 +239,13 @@ GN:GIN:324:Guinea
 GP:GLP:312:Guadeloupe
 GQ:GNQ:226:Equatorial Guinea
 GR:GRC:300:Greece
+GS:SGS:239:South Georgia and the South Sandwich Islands
 GT:GTM:320:Guatemala
 GU:GUM:316:Guam
 GW:GNB:624:Guinea-Bissau
 GY:GUY:328:Guyana
 HK:HGK:344:Hong Kong
+HM:HMD:334:Heard Island and Mcdonald Islands
 HN:HND:340:Honduras
 HR:HRV:191:Croatia
 HT:HTI:332:Haiti
@@ -214,7 +270,7 @@ KH:KHM:116:Cambodia
 KI:KIR:296:Kiribati
 KM:COM:174:Comoros
 KN:KNA:659:Saint Kitts and Nevis
-KP:PRK:408:Democratic People's Replublic of Korea
+KP:PRK:408:Democratic People's Republic of Korea
 KR:KOR:410:Korea,Republic of
 KW:KWT:414:Kuwait
 KY:CYM:136:Cayman Islands
@@ -281,9 +337,9 @@ PW:PLW:585:Palau
 PY:PRY:600:Paraguay
 QA:QAT:634:Qatar
 RE:REU:638:Réunion
-RO:ROU::642:Romania
+RO:ROU:642:Romania
 RS:SRB:688:Serbia
-RU:RUS:643:Russia,Federation of
+RU:RUS:643:Russian Federation
 RW:RWA:646:Rwanda
 SA:SAU:682:Saudi Arabia,Kingdom of
 SB:SLB:090:Solomon Islands
@@ -305,3 +361,38 @@ ST:STP:678:Sao Tome and Principe
 SV:SLV:222:El Salvador
 SY:SYR:760:Syria
 SZ:SWZ:748:Swaziland
+TC:TCA:796:Turks and Caicos Islands
+TD:TCD:148:Chad
+TF:ATF:260:French Southern Territories
+TG:TGO:768:Togo
+TH:THA:764:Thailand
+TJ:TJK:762:Tajikistan
+TK:TKL:772:Tokelau
+TL:TLS:626:Timor-Leste
+TM:TKM:795:Turkmenistan
+TN:TUN:788:Tunisia
+TO:TON:776:Tonga
+TR:TUR:792:Turkey
+TT:TTO:780:Trinidad and Tobago
+TV:TUV:798:Tuvalu
+TW:TWN:158:Taiwan
+TZ:TZA:834:Tanzania,United Republic of
+UA:UKR:804:Ukraine
+UG:UGA:800:Uganda
+UM:UMI:581:United States Minor Outlying Islands
+US:USA:840:America,The United States of
+UY:URY:858:Uruguay
+UZ:UZB:860:Uzbekistan
+VA:VCT:336:Vatican City
+VC:VCT:670:Saint Vincent and Grenadines
+VE:VEN:862:Venezuela,Bolivarian Republic of
+VG:VGB:092:British Virgin Islands
+VN:VNM:704:Viet Nam
+VU:VUT:548:Vanuatu
+WF:WLF:876:Wallis and Futuna Islands
+WS:WSM:882:Samoa
+YE:YEM:887:Yemen
+YT:MYT:175:Mayotte
+ZA:ZAF:710:South Africa
+ZM:ZMB:894:Zambia
+ZW:ZWE:716:Zimbabwe
