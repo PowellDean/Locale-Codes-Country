@@ -158,7 +158,7 @@ sub searchCountryName($country!, $codesetOut?=LOCALE_CODE_ALPHA_2) {
 
 =finish
 AD:AND:020:Andorra
-AE:ARE:784:United Arab Empirates
+AE:ARE:784:United Arab Emirates
 AF:AFG:004:Afghanistan
 AG:ATG:028:Antigua and Barbuda
 AI:AIA:660:Anguilla
