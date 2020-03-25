@@ -60,6 +60,7 @@ multi codeToCountry(Str $aCode) is export {
             if $aCode ~~ /^\./ {
                 my $trimCode = $aCode;
                 $trimCode ~~ s/\.//;
+				$trimCode = "gb" if ($trimCode eq "uk");
                 return %code2ToCountry{$trimCode.uc};
             }
             return %code3ToCountry{$aCode.uc}; }
@@ -151,6 +152,7 @@ sub searchCountryName($country!, $codesetOut?=LOCALE_CODE_ALPHA_2) {
             my $dom = %countryToCode2{$country.uc};
             return Any if (!$dom);
             $dom = $dom.lc;
+			$dom = "uk" if ($dom eq "gb");
             return ".$dom";
         }
     }
